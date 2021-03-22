@@ -1,0 +1,1 @@
+print('PJJ has joined HunterTeam.')
