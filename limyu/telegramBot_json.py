@@ -53,7 +53,7 @@ def getJson(useText, jsondata) :
 
 
 def get_message(update , context):
-    with open("../../json_test.json", "r", encoding='UTF8') as json_file:
+    with open("./json_test.json", "r", encoding='UTF8') as json_file:
         jsondata = json.load(json_file)
 
     useText = update.message.text
