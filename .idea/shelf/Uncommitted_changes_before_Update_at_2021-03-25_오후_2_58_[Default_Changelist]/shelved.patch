@@ -1,0 +1,17 @@
+Index: Julian/practice.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>a = \"abc\"\r\nprint(a)\r\n\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Julian/practice.py b/Julian/practice.py
+--- a/Julian/practice.py	(revision 3c57b1da4f64aa83849c2f32d523fd826fbac417)
++++ b/Julian/practice.py	(date 1616651908101)
+@@ -2,3 +2,5 @@
+ print(a)
+ 
+ 
++a = "Life is too short, You need Python"
++a[0]
+\ No newline at end of file
