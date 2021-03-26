@@ -1,7 +1,14 @@
 from telegram.ext import Updater, MessageHandler, Filters
+import telegram
 
 # 토큰을 통해 updater를 만들고 handler을 추가해주는 방식
 api_key = '1592049270:AAEUp0Qwnqn2UmXRDFWlfXfELZDEFr5xss0'
+
+bot = telegram.Bot(token=api_key)
+# chat_id = bot.get_updates()[-1].message.chat_id
+chat_id = 978800864
+
+bot.sendMessage(chat_id=chat_id, text="원하시는 문의 유형을 번호로 입력해주세요. \n1.반품문의\n2.교환문의\n3.배송문의\n4.기타문의")
 
 
 # handler(dispatcher가 받아오면 handling함)
