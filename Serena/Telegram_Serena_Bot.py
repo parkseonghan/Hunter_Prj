@@ -5,6 +5,7 @@ import telegram
 import os
 import datetime
 
+
 api_key = '1761478694:AAGxcdmuFKv92evUb6VwxY2TRPaf9MXLlFY'
 
 bot = telegram.Bot(token=api_key)
@@ -12,6 +13,8 @@ bot = telegram.Bot(token=api_key)
 chat_id = 978800864
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))  # D:\4.dev\Python\PythonProject\Serena
+
+db = db_con.Db_conn()
 
 # get_message FLAG
 msg: bool = False
@@ -24,7 +27,7 @@ bot.sendMessage(chat_id=chat_id, text="진료예약 시작을 위해 입력창�
 # Create Button Menu
 def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
     menu = [buttons[i:i + n_cols]
-            for i in range(0, len(buttons), n_cols)]  # range(start, stoop, step)
+            for i in range(0, len(buttons), n_cols)]  # range(start, stoop, step), 2차원배열
 
     if header_buttons:
         menu.insert(0, header_buttons)
@@ -50,11 +53,12 @@ def build_button(text_list, callback_header=""):  # make button list
 # Help Command
 # https://blog.psangwoo.com/coding/2018/08/20/python-telegram-bot-4.html
 def help_command(update, context):
-    button_list = [InlineKeyboardButton("1. 김ㅇㅇ", callback_data="1"),
-                   InlineKeyboardButton("2. 박ㅇㅇ", callback_data="2"),
-                   InlineKeyboardButton("3. 이ㅇㅇ", callback_data="3"),
-                   InlineKeyboardButton("4. 기타문의", callback_data="4")]
+    button_list = [InlineKeyboardButton("1. 김ㅇㅇ", callback_data="김ㅇㅇ"),
+                   InlineKeyboardButton("2. 박ㅇㅇ", callback_data="박ㅇㅇ"),
+                   InlineKeyboardButton("3. 이ㅇㅇ", callback_data="이ㅇㅇ"),
+                   InlineKeyboardButton("4. 기타문의", callback_data="기타문의")]
     show_markup = InlineKeyboardMarkup(build_menu(button_list, len(button_list) - 1))  # make markup
+    # show_markup = InlineKeyboardMarkup(button_list)
 
     update.message.reply_text("예약을 원하시는 의사 선생님을 선택해주세요.", reply_markup=show_markup)
 
@@ -81,55 +85,53 @@ def callback_help(update, context):
         date5 = str(datetime.date.today() + datetime.timedelta(days=5))
 
         # BTN1
-        if data_selected == "1":
+        if data_selected == "김ㅇㅇ":
             button_list = build_button([date1, date2, date3, "cancel"], data_selected)
-            show_markup = InlineKeyboardMarkup(build_menu(button_list, len(button_list) - 1))
-            context.bot.edit_message_text(text="{0}이(가 선택되었습니다.\n 예약 가능한 날짜 중 원하는 날짜를 선택해주세요.".format("1. 김ㅇㅇ"),  # format(update.callback_query.data)
-                                          chat_id=update.callback_query.message.chat_id,
-                                          message_id=update.callback_query.message.message_id,
-                                          reply_markup=show_markup)
+            text = "{0}이(가 선택되었습니다.\n 예약 가능한 날짜 중 원하는 날짜를 선택해주세요.".format("1. 김ㅇㅇ")
+            edit_msg(context, update, button_list, len(button_list) - 1, text)
 
         # BTN2
-        elif data_selected == "2":
+        elif data_selected == "박ㅇㅇ":
             button_list = build_button([date2, date3, date4, date5, "cancel"], data_selected)
-            show_markup = InlineKeyboardMarkup(build_menu(button_list, len(button_list) - 3))
-            context.bot.edit_message_text(text="{0}이(가 선택되었습니다.\n 예약 가능한 날짜 중 원하는 날짜를 선택해주세요.".format("2. 박ㅇㅇ"),
-                                          chat_id=update.callback_query.message.chat_id,
-                                          message_id=update.callback_query.message.message_id,
-                                          reply_markup=show_markup)
+            text = "{0}이(가 선택되었습니다.\n 예약 가능한 날짜 중 원하는 날짜를 선택해주세요.".format("2. 박ㅇㅇ")
+            edit_msg(context, update, button_list, len(button_list) - 3, text)
 
         # BTN3
-        elif data_selected == "3":
+        elif data_selected == "이ㅇㅇ":
             button_list = build_button([date3, date4, "cancel"], data_selected)
-            show_markup = InlineKeyboardMarkup(build_menu(button_list, len(button_list) - 1))
-            context.bot.edit_message_text(text="{0}이(가) 선택되었습니다.\n 예약 가능한 날짜 중 원하는 날짜를 선택해주세요.".format("3. 이ㅇㅇ"),
-                                          chat_id=update.callback_query.message.chat_id,
-                                          message_id=update.callback_query.message.message_id,
-                                          reply_markup=show_markup)
+            text = "{0}이(가) 선택되었습니다.\n 예약 가능한 날짜 중 원하는 날짜를 선택해주세요.".format("3. 이ㅇㅇ")
+            edit_msg(context, update, button_list, len(button_list) - 1, text)
 
         # BTN4
-        elif data_selected == "4":
+        elif data_selected == "기타문의":
             global msg
             msg = True
             button_list = build_button(["cancel"], data_selected)
-            show_markup = InlineKeyboardMarkup(build_menu(button_list, len(button_list)))
-            context.bot.edit_message_text(text="{0}가 선택되었습니다. 기타 문의사항을 입력해주세요.".format("4. 기타문의"),
-                                          chat_id=update.callback_query.message.chat_id,
-                                          message_id=update.callback_query.message.message_id,
-                                          reply_markup=show_markup)
+            text = "{0}가 선택되었습니다. 기타 문의사항을 입력해주세요.".format("4. 기타문의")
+            edit_msg(context, update, button_list, len(button_list), text)
 
     # 2nd Selection
     elif len(data_selected.split(",")) == 2:
         print("length = 2")
         cur_time = datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+        doc = data_selected.split(", ")[0]
         date = data_selected.split(", ")[1]
-        print(data_selected)
-        print(date)
-        context.bot.edit_message_text(text="{0}가 선택되었습니다.".format(update.callback_query.data),
-                                      chat_id=update.callback_query.message.chat_id,
-                                      message_id=update.callback_query.message.message_id)
         sql = f"INSERT INTO serena VALUES('serena', '01084849797', '1234', '{date}', '15:00', '{cur_time}', '{data_selected}')"
-        insert_sql(sql)
+        context.bot.edit_message_text(text="{0}선생님 {1}일에 예약 완료되었습니다. 감사합니다."
+                                           "\n병원 위치 : https://place.map.kakao.com/11272379".format(doc, date),
+                                      chat_id=update.callback_query.message.chat_id,
+                                      message_id=update.callback_query.message.message_id,
+                                      parse_mode="Markdown")
+        db.db_insert(sql)
+
+
+# Get Button List and Reply with it
+def edit_msg(context, update, button_list, btnlen, text):
+    show_markup = InlineKeyboardMarkup(build_menu(button_list, btnlen))
+    context.bot.edit_message_text(text=text,
+                                  chat_id=update.callback_query.message.chat_id,
+                                  message_id=update.callback_query.message.message_id,
+                                  reply_markup=show_markup)
 
 
 # Message Reply
@@ -142,7 +144,7 @@ def get_message(update, context):
     # 4. 기타문의로 들어올 경우
     if msg:
         sql = f"INSERT INTO serena VALUES('serena', '01084849797', '1234', '-', '-', '{cur_time}', '{text}')"
-        insert_sql(sql)
+        db.db_insert(sql)
         update.message.reply_text("문의가 등록되었습니다.")
         msg = False
     else:
@@ -151,46 +153,24 @@ def get_message(update, context):
 
 # Photo Reply
 def get_photo(update, context):
-    file_path = os.path.join(cur_dir, 'telegram_Image.png')
-    photo_id = update.message.photo[-1].file_id
-    context.bot.getFile(photo_id).download(file_path)
-    update.message.reply_text('photo saved')
+    file_name = 'telegram_Image.png'
+    file_id = update.message.photo[-1].file_id
+    text = '사진이 저장되었습니다. "{}"'.format(file_name)
+    upload(update, context, file_name, file_id, text)
 
 
 # File Reply
 def get_file(update, context):
-    file_path = os.path.join(cur_dir, update.message.document.file_name)
+    file_name = update.message.document.file_name
     file_id = update.message.document.file_id
-    context.bot.getFile(file_id).download(file_path)
-    update.message.reply_text('file saved')
+    text = '파일이 저장되었습니다. "{}"'.format(file_name)
+    upload(update, context, file_name, file_id, text)
 
 
-# Insert SQL
-def insert_sql(sql):
-    print("++++++++ " + sql + " ++++++++")
-    db_con.Db_conn().insert_query(sql)
-
-
-
-# ==== DB CONNECTION ==== #
-# http://pythonstudy.xyz/python/article/202-MySQL-%EC%BF%BC%EB%A6%AC
-# db_cls = db_con.Db_conn()
-# dbcon = db_cls.connection()
-# cursor = dbcon.cursor()  # cursor 객체 생성 : db에 sql문 수행하고 조회된 결과 가지고 오는 역할
-# cursor.execute("SELECT name, pNum, pwd, DATE_FORMAT(date, '%Y%m%d'), time, writeDate FROM serena")
-# rows = cursor.fetchall()  # fetchall : 조회된 결과 모두 리스트로 반환
-# print(rows)
-
-# db_cls = db_con.Db_conn()
-# dbcon = db_cls.connection()
-# cursor = dbcon.cursor()  # cursor 객체 생성 : db에 sql문 수행하고 조회된 결과 가지고 오는 역할
-# print(sql)
-# cursor.execute(sql)  # execute : sql문 실행
-# dbcon.commit()
-# rows = cursor.fetchall()  # fetchall : 조회된 결과 모두 리스트로 반환
-# print(rows)
-# dbcon.close()
-
+# When File/Photo Uploaded
+def upload(update, context, file_name, file_id, text):
+    context.bot.getFile(file_id).download(file_name)
+    update.message.reply_text(text)
 
 
 # ==== api_key 통해 updater를 만들고 handler을 추가해주는 방식 ==== #
@@ -206,7 +186,6 @@ updater.dispatcher.add_handler(help_handler)
 
 # Handler for Callback
 updater.dispatcher.add_handler(CallbackQueryHandler(callback_help))
-# updater.dispatcher.add_handler(CallbackQueryHandler(get_message))
 
 # Handler for Message(Text) --> (Filters.text:텍스트에 응답, get_message 함수 호출)
 message_handler = MessageHandler(Filters.text, get_message)
