@@ -1,6 +1,6 @@
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackQueryHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-import inc_file.dbconn as db_con
+import db_file.dbconn as db_con
 import telegram
 import os
 import datetime
@@ -23,11 +23,12 @@ msg: bool = False
 bot.sendMessage(chat_id=chat_id, text="진료예약 시작을 위해 입력창에 /help를 입력해주세요")
 
 
-# ==== FUNCTION ==== #
+# #################################### Menu / Button #################################### #
 # Create Button Menu
 def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
-    menu = [buttons[i:i + n_cols]
-            for i in range(0, len(buttons), n_cols)]  # range(start, stoop, step), 2차원배열
+    menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
+    # range(start, end, step), 2차원배열
+    # [[1,2], [3,4], [5]]
 
     if header_buttons:
         menu.insert(0, header_buttons)
@@ -50,17 +51,38 @@ def build_button(text_list, callback_header=""):  # make button list
     return button_list
 
 
+# Get Button List and Reply with it
+def edit_msg(context, update, button_list, btnlen, text):
+    show_markup = InlineKeyboardMarkup(build_menu(button_list, btnlen))
+    context.bot.edit_message_text(text=text,
+                                  chat_id=update.callback_query.message.chat_id,
+                                  message_id=update.callback_query.message.message_id,
+                                  reply_markup=show_markup)
+
+
+# ################################# Help Command / Callbacks ################################### #
 # Help Command
 # https://blog.psangwoo.com/coding/2018/08/20/python-telegram-bot-4.html
 def help_command(update, context):
-    button_list = [InlineKeyboardButton("1. 김ㅇㅇ", callback_data="김ㅇㅇ"),
-                   InlineKeyboardButton("2. 박ㅇㅇ", callback_data="박ㅇㅇ"),
-                   InlineKeyboardButton("3. 이ㅇㅇ", callback_data="이ㅇㅇ"),
-                   InlineKeyboardButton("4. 기타문의", callback_data="기타문의")]
-    show_markup = InlineKeyboardMarkup(build_menu(button_list, len(button_list) - 1))  # make markup
-    # show_markup = InlineKeyboardMarkup(button_list)
+    print("help command")
+    button_list = [[InlineKeyboardButton("1. Dr.Kim", callback_data="Kim"),
+                   InlineKeyboardButton("2. Dr.Park", callback_data="Park")],
+                   [InlineKeyboardButton("3. Dr.Lee", callback_data="Lee"),
+                   InlineKeyboardButton("4. Dr.Choi", callback_data="Choi")],
+                   [InlineKeyboardButton("기타문의", callback_data="기타문의")],
+                   [InlineKeyboardButton(text="병원 웹사이트 바로가기", url='https://www.naver.com')]]
+    # show_markup = InlineKeyboardMarkup(build_menu(button_list, len(button_list) - 4))  # make markup
+    show_markup = InlineKeyboardMarkup(button_list)
 
-    update.message.reply_text("예약을 원하시는 의사 선생님을 선택해주세요.", reply_markup=show_markup)
+    if update.message is not None:
+        print("111")
+        update.message.reply_text("예약을 원하시는 의사 선생님을 선택해주세요.", reply_markup=show_markup)
+    else:
+        print("222")
+        context.bot.edit_message_text(text="예약을 원하시는 의사 선생님을 선택해주세요.",
+                                      chat_id=update.callback_query.message.chat_id,
+                                      message_id=update.callback_query.message.message_id,
+                                      reply_markup=show_markup)
 
 
 # Button Callbacks
@@ -85,55 +107,59 @@ def callback_help(update, context):
         date5 = str(datetime.date.today() + datetime.timedelta(days=5))
 
         # BTN1
-        if data_selected == "김ㅇㅇ":
-            button_list = build_button([date1, date2, date3, "cancel"], data_selected)
-            text = "{0}이(가 선택되었습니다.\n 예약 가능한 날짜 중 원하는 날짜를 선택해주세요.".format("1. 김ㅇㅇ")
-            edit_msg(context, update, button_list, len(button_list) - 1, text)
+        if data_selected == "Kim":
+            button_list = build_button([date1, date2, date3, "back", "cancel"], data_selected)
+            text = "{0} 선생님이 선택되었습니다.\n 예약 가능한 날짜 중 원하는 날짜를 선택해주세요.".format("1. Kim")
+            edit_msg(context, update, button_list, len(button_list) - 2, text)
 
         # BTN2
-        elif data_selected == "박ㅇㅇ":
-            button_list = build_button([date2, date3, date4, date5, "cancel"], data_selected)
-            text = "{0}이(가 선택되었습니다.\n 예약 가능한 날짜 중 원하는 날짜를 선택해주세요.".format("2. 박ㅇㅇ")
-            edit_msg(context, update, button_list, len(button_list) - 3, text)
+        elif data_selected == "Park":
+            button_list = build_button([date2, date3, date4, date5, "back", "cancel"], data_selected)
+            text = "{0} 선생님이 선택되었습니다.\n 예약 가능한 날짜 중 원하는 날짜를 선택해주세요.".format("2. Park")
+            edit_msg(context, update, button_list, len(button_list) - 2, text)
 
         # BTN3
-        elif data_selected == "이ㅇㅇ":
-            button_list = build_button([date3, date4, "cancel"], data_selected)
-            text = "{0}이(가) 선택되었습니다.\n 예약 가능한 날짜 중 원하는 날짜를 선택해주세요.".format("3. 이ㅇㅇ")
-            edit_msg(context, update, button_list, len(button_list) - 1, text)
+        elif data_selected == "Lee":
+            button_list = build_button([date3, date4, "back", "cancel"], data_selected)
+            text = "{0} 선생님이 선택되었습니다.\n 예약 가능한 날짜 중 원하는 날짜를 선택해주세요.".format("3. Lee")
+            edit_msg(context, update, button_list, len(button_list) - 2, text)
 
         # BTN4
+        elif data_selected == "Choi":
+            button_list = build_button([date3, date4, "back", "cancel"], data_selected)
+            text = "{0} 선생님이 선택되었습니다.\n 예약 가능한 날짜 중 원하는 날짜를 선택해주세요.".format("4. Choi")
+            edit_msg(context, update, button_list, len(button_list) - 2, text)
+
+        # BTN5
         elif data_selected == "기타문의":
             global msg
             msg = True
             button_list = build_button(["cancel"], data_selected)
-            text = "{0}가 선택되었습니다. 기타 문의사항을 입력해주세요.".format("4. 기타문의")
+            text = "{0}가 선택되었습니다. 기타 문의사항을 입력해주세요.".format("기타문의")
             edit_msg(context, update, button_list, len(button_list), text)
+
 
     # 2nd Selection
     elif len(data_selected.split(",")) == 2:
         print("length = 2")
-        cur_time = datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')
-        doc = data_selected.split(", ")[0]
-        date = data_selected.split(", ")[1]
-        sql = f"INSERT INTO serena VALUES('serena', '01084849797', '1234', '{date}', '15:00', '{cur_time}', '{data_selected}')"
-        context.bot.edit_message_text(text="{0}선생님 {1}일에 예약 완료되었습니다. 감사합니다."
-                                           "\n병원 위치 : https://place.map.kakao.com/11272379".format(doc, date),
-                                      chat_id=update.callback_query.message.chat_id,
-                                      message_id=update.callback_query.message.message_id,
-                                      parse_mode="Markdown")
-        db.db_insert(sql)
+
+        if data_selected.split(", ")[1] == "back":
+            help_command(update, context)
+
+        else:
+            cur_time = datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+            doc = data_selected.split(", ")[0]
+            date = data_selected.split(", ")[1]
+            sql = f"INSERT INTO serena VALUES('serena', '01084849797', '1234', '{date}', '15:00', '{cur_time}', '{data_selected}')"
+            context.bot.edit_message_text(text="{0}선생님 {1}일에 예약 완료되었습니다. 감사합니다."
+                                               "\n\n오시는길 : https://place.map.kakao.com/11272379".format(doc, date),
+                                          chat_id=update.callback_query.message.chat_id,
+                                          message_id=update.callback_query.message.message_id,
+                                          parse_mode="Markdown")
+            db.db_insert(sql)
 
 
-# Get Button List and Reply with it
-def edit_msg(context, update, button_list, btnlen, text):
-    show_markup = InlineKeyboardMarkup(build_menu(button_list, btnlen))
-    context.bot.edit_message_text(text=text,
-                                  chat_id=update.callback_query.message.chat_id,
-                                  message_id=update.callback_query.message.message_id,
-                                  reply_markup=show_markup)
-
-
+# ###################################### Messages ###################################### #
 # Message Reply
 def get_message(update, context):
     global msg
@@ -173,40 +199,28 @@ def upload(update, context, file_name, file_id, text):
     update.message.reply_text(text)
 
 
-# ==== api_key 통해 updater를 만들고 handler을 추가해주는 방식 ==== #
+# ################################## Handlers ################################## #
+# ###################### dispatcher가 받아오면 handling함 ######################## #
+# https://blog.psangwoo.com/coding/2018/01/09/python-telegram-bot-3.html
 
 # updater --> 봇 업데이트 사항이 있으면 가져오는 클래스
 updater = Updater(api_key, use_context=True)
 
-# https://blog.psangwoo.com/coding/2018/01/09/python-telegram-bot-3.html
-# ==== HANDLER(dispatcher가 받아오면 handling함) ==== #
 # Handler for Help Command
-help_handler = CommandHandler('help', help_command)
-updater.dispatcher.add_handler(help_handler)
+updater.dispatcher.add_handler(CommandHandler('help', help_command))
+updater.dispatcher.add_handler(MessageHandler(Filters.text, get_message))
+updater.dispatcher.add_handler(MessageHandler(Filters.photo, get_photo))
+updater.dispatcher.add_handler(MessageHandler(Filters.document, get_file))
 
 # Handler for Callback
 updater.dispatcher.add_handler(CallbackQueryHandler(callback_help))
 
-# Handler for Message(Text) --> (Filters.text:텍스트에 응답, get_message 함수 호출)
-message_handler = MessageHandler(Filters.text, get_message)
-updater.dispatcher.add_handler(message_handler)
-
-# Handler for Photo
-photo_handler = MessageHandler(Filters.photo, get_photo)
-updater.dispatcher.add_handler(photo_handler)
-
-# Handler for File
-file_handler = MessageHandler(Filters.document, get_file)
-updater.dispatcher.add_handler(file_handler)
-
 # polling 방식: 주기적으로 텔레그램 서버에 접속해서 새로운 메세지가 있으면 받아옴
 # timeout은 polling에 걸리는 시간의 최대치
-# clean은 deprecated --> drop_pending_updates로 서버에 저장되어 있던 업데이트 내용 삭제
-updater.start_polling(timeout=3, drop_pending_updates=True)  # drop_pending_updates=True : to drop all pending updates
+updater.start_polling(timeout=3, clean=True)
 
 # updater가 종료되지 않고 계속 실행되도록 하는 함수
 updater.idle()
-
 
 
 
