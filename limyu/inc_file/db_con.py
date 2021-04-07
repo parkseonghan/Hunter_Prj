@@ -2,7 +2,7 @@ import pymysql
 
 class db_con :
     def __init__(self):
-        self.dburl = 'localhost'
+        self.dburl = '192.168.19.234'
         self.dbuser = 'root'
         self.dbpw = 'cic_study!@'
         self.dbname = 'cic_study'
